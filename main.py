@@ -961,148 +961,128 @@ def run_label_enrich_job():
         db.close()
 
 @app.on_event("startup")
-async def start_scheduler():
--    # Guard: enable only when explicitly requested (e.g., in a dedicated scheduler process)
--    if os.getenv("ENABLE_SCHEDULER", "0").lower() not in ("1", "true", "yes"):
--        return
--    # Initialize scheduler with cron from env vars; defaults: daily at 02:00 and 02:30 UTC
--    scheduler = AsyncIOScheduler(timezone="UTC")
--    ndc_cron = os.getenv("SCHEDULE_OPENFDA_NDC_CRON", "0 2 * * *")
--    label_cron = os.getenv("SCHEDULE_OPENFDA_LABEL_CRON", "30 2 * * *")
--    try:
--        scheduler.add_job(run_ndc_import_job, CronTrigger.from_crontab(ndc_cron), id="ndc_import", replace_existing=True)
--        scheduler.add_job(run_label_enrich_job, CronTrigger.from_crontab(label_cron), id="label_enrich", replace_existing=True)
--        scheduler.start()
--        # store to app state so it can be inspected if needed
--        app.state.scheduler = scheduler
--        logger.info("scheduler_started")
--    except Exception as e:
--        # fail silently to avoid crashing the API if scheduler cannot start
--        logger.error(f"scheduler_start_failed error={str(e)}")
--        pass
-+@app.on_event("startup")
-+def bootstrap_data():
-+    # Run lightweight SQLite migrations, then backfill normalized synonyms
-+    db = SessionLocal()
-+    try:
-+        conn = engine.connect()
-+        try:
-+            if engine.dialect.name == "sqlite":
-+                # Ensure a simple schema_migrations table exists
-+                conn.execute(text("CREATE TABLE IF NOT EXISTS schema_migrations (version INTEGER NOT NULL)"))
-+                res = conn.execute(text("SELECT version FROM schema_migrations LIMIT 1")).fetchone()
-+                if res is None:
-+                    conn.execute(text("INSERT INTO schema_migrations (version) VALUES (1)"))
-+                    current_version = 1
-+                else:
-+                    current_version = int(res[0] or 1)
-+                target_version = 2
-+                if current_version < target_version:
-+                    # Helper to get column type from PRAGMA
-+                    def col_type(table: str, col: str) -> Optional[str]:
-+                        rows = conn.execute(text(f"PRAGMA table_info({table})")).fetchall()
-+                        for r in rows:
-+                            # row: (cid, name, type, notnull, dflt_value, pk)
-+                            if (r[1] or "").lower() == col.lower():
-+                                return (r[2] or "").upper()
-+                        return None
-+                    # Check drugs table
-+                    try:
-+                        t1 = col_type("drugs", "indications_and_usage")
-+                        t2 = col_type("drugs", "adverse_reactions")
-+                        t3 = col_type("drugs", "warnings")
-+                        need_drugs = any(t not in (None, "TEXT") for t in (t1, t2, t3))
-+                    except Exception:
-+                        need_drugs = False
-+                    if need_drugs:
-+                        logger.info("migrating_table table=drugs to_text_fields=true")
-+                        conn.execute(text(
-+                            """
-+                            CREATE TABLE IF NOT EXISTS drugs_new (
-+                                id INTEGER PRIMARY KEY,
-+                                ndc VARCHAR NOT NULL UNIQUE,
-+                                product_name VARCHAR NOT NULL,
-+                                generic_name VARCHAR,
-+                                manufacturer VARCHAR NOT NULL,
-+                                dosage_form VARCHAR,
-+                                route_of_administration VARCHAR,
-+                                indications_and_usage TEXT,
-+                                adverse_reactions TEXT,
-+                                warnings TEXT
-+                            )
-+                            """
-+                        ))
-+                        conn.execute(text(
-+                            """
-+                            INSERT INTO drugs_new (
-+                                id, ndc, product_name, generic_name, manufacturer,
-+                                dosage_form, route_of_administration,
-+                                indications_and_usage, adverse_reactions, warnings
-+                            )
-+                            SELECT id, ndc, product_name, generic_name, manufacturer,
-+                                   dosage_form, route_of_administration,
-+                                   indications_and_usage, adverse_reactions, warnings
-+                            FROM drugs
-+                            """
-+                        ))
-+                        conn.execute(text("DROP TABLE drugs"))
-+                        conn.execute(text("ALTER TABLE drugs_new RENAME TO drugs"))
-+                        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_drugs_product_name ON drugs (product_name)"))
-+                        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_drugs_generic_name ON drugs (generic_name)"))
-+                    # Check diagnoses table
-+                    try:
-+                        td = col_type("diagnoses", "description")
-+                        need_diag = td not in (None, "TEXT")
-+                    except Exception:
-+                        need_diag = False
-+                    if need_diag:
-+                        logger.info("migrating_table table=diagnoses description_to_text=true")
-+                        conn.execute(text(
-+                            """
-+                            CREATE TABLE IF NOT EXISTS diagnoses_new (
-+                                id INTEGER PRIMARY KEY,
-+                                condition_name VARCHAR NOT NULL,
-+                                icd10_code VARCHAR NOT NULL,
-+                                icd9_code VARCHAR,
-+                                synonyms VARCHAR,
-+                                description TEXT
-+                            )
-+                            """
-+                        ))
-+                        conn.execute(text(
-+                            """
-+                            INSERT INTO diagnoses_new (
-+                                id, condition_name, icd10_code, icd9_code, synonyms, description
-+                            )
-+                            SELECT id, condition_name, icd10_code, icd9_code, synonyms, description
-+                            FROM diagnoses
-+                            """
-+                        ))
-+                        conn.execute(text("DROP TABLE diagnoses"))
-+                        conn.execute(text("ALTER TABLE diagnoses_new RENAME TO diagnoses"))
-+                        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_diagnoses_condition_name ON diagnoses (condition_name)"))
-+                        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_diagnoses_icd10_code ON diagnoses (icd10_code)"))
-+                    # Ensure new tables exist after migrations
-+                    Base.metadata.create_all(bind=engine)
-+                    conn.execute(text("UPDATE schema_migrations SET version = :v"), {"v": target_version})
-+                    logger.info("migration_complete version=%s" % target_version)
-+            # Backfill normalized synonyms once
-+            try:
-+                existing = db.query(DiagnosisSynonymModel).count()
-+            except Exception:
-+                existing = 0
-+            if existing == 0:
-+                for d in db.query(DiagnosisModel).all():
-+                    syns = csv_to_list(d.synonyms)
-+                    if syns:
-+                        upsert_diagnosis_synonyms(db, d.id, syns)
-+                db.commit()
-+        finally:
-+            conn.close()
-+    except Exception as e:
-+        logger.error(f"bootstrap_failed error={e}")
-+    finally:
-+        db.close()
+def bootstrap_data():
+    # Run lightweight SQLite migrations, then backfill normalized synonyms
+    db = SessionLocal()
+    try:
+        conn = engine.connect()
+        try:
+            if engine.dialect.name == "sqlite":
+                # Ensure a simple schema_migrations table exists
+                conn.execute(text("CREATE TABLE IF NOT EXISTS schema_migrations (version INTEGER NOT NULL)"))
+                res = conn.execute(text("SELECT version FROM schema_migrations LIMIT 1")).fetchone()
+                if res is None:
+                    conn.execute(text("INSERT INTO schema_migrations (version) VALUES (1)"))
+                    current_version = 1
+                else:
+                    current_version = int(res[0] or 1)
+                target_version = 2
+                if current_version < target_version:
+                    # Helper to get column type from PRAGMA
+                    def col_type(table: str, col: str) -> Optional[str]:
+                        rows = conn.execute(text(f"PRAGMA table_info({table})")).fetchall()
+                        for r in rows:
+                            # row: (cid, name, type, notnull, dflt_value, pk)
+                            if (r[1] or "").lower() == col.lower():
+                                return (r[2] or "").upper()
+                        return None
+                    # Check drugs table
+                    try:
+                        t1 = col_type("drugs", "indications_and_usage")
+                        t2 = col_type("drugs", "adverse_reactions")
+                        t3 = col_type("drugs", "warnings")
+                        need_drugs = any(t not in (None, "TEXT") for t in (t1, t2, t3))
+                    except Exception:
+                        need_drugs = False
+                    if need_drugs:
+                        logger.info("migrating_table table=drugs to_text_fields=true")
+                        conn.execute(text(
+                            """
+                            CREATE TABLE IF NOT EXISTS drugs_new (
+                                id INTEGER PRIMARY KEY,
+                                ndc VARCHAR NOT NULL UNIQUE,
+                                product_name VARCHAR NOT NULL,
+                                generic_name VARCHAR,
+                                manufacturer VARCHAR NOT NULL,
+                                dosage_form VARCHAR,
+                                route_of_administration VARCHAR,
+                                indications_and_usage TEXT,
+                                adverse_reactions TEXT,
+                                warnings TEXT
+                            )
+                            """
+                        ))
+                        conn.execute(text(
+                            """
+                            INSERT INTO drugs_new (
+                                id, ndc, product_name, generic_name, manufacturer,
+                                dosage_form, route_of_administration,
+                                indications_and_usage, adverse_reactions, warnings
+                            )
+                            SELECT id, ndc, product_name, generic_name, manufacturer,
+                                   dosage_form, route_of_administration,
+                                   indications_and_usage, adverse_reactions, warnings
+                            FROM drugs
+                            """
+                        ))
+                        conn.execute(text("DROP TABLE drugs"))
+                        conn.execute(text("ALTER TABLE drugs_new RENAME TO drugs"))
+                        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_drugs_product_name ON drugs (product_name)"))
+                        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_drugs_generic_name ON drugs (generic_name)"))
+                    # Check diagnoses table
+                    try:
+                        td = col_type("diagnoses", "description")
+                        need_diag = td not in (None, "TEXT")
+                    except Exception:
+                        need_diag = False
+                    if need_diag:
+                        logger.info("migrating_table table=diagnoses description_to_text=true")
+                        conn.execute(text(
+                            """
+                            CREATE TABLE IF NOT EXISTS diagnoses_new (
+                                id INTEGER PRIMARY KEY,
+                                condition_name VARCHAR NOT NULL,
+                                icd10_code VARCHAR NOT NULL,
+                                icd9_code VARCHAR,
+                                synonyms VARCHAR,
+                                description TEXT
+                            )
+                            """
+                        ))
+                        conn.execute(text(
+                            """
+                            INSERT INTO diagnoses_new (
+                                id, condition_name, icd10_code, icd9_code, synonyms, description
+                            )
+                            SELECT id, condition_name, icd10_code, icd9_code, synonyms, description
+                            FROM diagnoses
+                            """
+                        ))
+                        conn.execute(text("DROP TABLE diagnoses"))
+                        conn.execute(text("ALTER TABLE diagnoses_new RENAME TO diagnoses"))
+                        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_diagnoses_condition_name ON diagnoses (condition_name)"))
+                        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_diagnoses_icd10_code ON diagnoses (icd10_code)"))
+                    # Ensure new tables exist after migrations
+                    Base.metadata.create_all(bind=engine)
+                    conn.execute(text("UPDATE schema_migrations SET version = :v"), {"v": target_version})
+                    logger.info("migration_complete version=%s" % target_version)
+            # Backfill normalized synonyms once
+            try:
+                existing = db.query(DiagnosisSynonymModel).count()
+            except Exception:
+                existing = 0
+            if existing == 0:
+                for d in db.query(DiagnosisModel).all():
+                    syns = csv_to_list(d.synonyms)
+                    if syns:
+                        upsert_diagnosis_synonyms(db, d.id, syns)
+                db.commit()
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"bootstrap_failed error={e}")
+    finally:
+        db.close()
 
 @app.post("/import/openfda/label")
 def import_openfda_label(

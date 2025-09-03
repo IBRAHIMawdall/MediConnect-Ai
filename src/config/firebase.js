@@ -76,24 +76,24 @@ if (import.meta.env.DEV) {
   
   try {
     // Auth emulator
-    if (!auth._delegate._config.emulator) {
+    if (auth) {
       connectAuthEmulator(auth, `http://${EMULATOR_HOST}:9099`, {
         disableWarnings: true
       });
     }
     
     // Firestore emulator
-    if (!db._delegate._databaseId.projectId.includes('demo-')) {
+    if (db) {
       connectFirestoreEmulator(db, EMULATOR_HOST, 8080);
     }
     
     // Functions emulator
-    if (!functions._delegate._url) {
+    if (functions) {
       connectFunctionsEmulator(functions, EMULATOR_HOST, 5001);
     }
     
     // Storage emulator
-    if (!storage._delegate._host.includes('localhost')) {
+    if (storage) {
       connectStorageEmulator(storage, EMULATOR_HOST, 9199);
     }
     

@@ -300,29 +300,3 @@ class AnalyticsService {
 const analyticsService = new AnalyticsService();
 
 export default analyticsService;
-
-// Export individual methods for convenience
-export const {
-  setUser,
-  setUserProperties,
-  trackEvent,
-  trackPageView,
-  trackLogin,
-  trackSignUp,
-  trackLogout,
-  trackSearch,
-  trackDrugView,
-  trackDrugSearch,
-  trackICD10Browse,
-  trackICD10Search,
-  trackBookmark,
-  trackShare,
-  trackError,
-  startTrace,
-  stopTrace,
-  trackPerformance,
-  trackConversion,
-  trackFeatureUsage,
-  trackSessionStart,
-  trackSessionEnd
-} = analyticsService;

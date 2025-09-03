@@ -13,17 +13,17 @@ import { doc, setDoc, getDoc, updateDoc, deleteDoc, serverTimestamp } from 'fire
 import { auth, db } from '../config/firebase';
 import { authMethods, onAuthStateChange, getCurrentUser, isAuthenticated as checkAuthenticated, getUserRole, hasRole as checkUserRole } from '../config/auth';
 
-const AuthContext = createContext({});
+const AuthContext = createContext(null);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
+export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -395,5 +395,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
-export default AuthContext;

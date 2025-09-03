@@ -259,6 +259,3 @@ export const withAuth = (Component, options = {}) => {
     </ProtectedRoute>
   );
 };
-
-// Note: useAuth hook is now provided by AuthContext
-// Import { useAuth } from '../../contexts/AuthContext' instead

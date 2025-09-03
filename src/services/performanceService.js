@@ -393,18 +393,6 @@ class PerformanceService {
   }
 }
 
-// Create singleton instance
 const performanceService = new PerformanceService();
 
 export default performanceService;
-
-// Export convenience methods
-export const {
-  startTiming,
-  recordTiming,
-  trackAPICall,
-  trackSearchPerformance,
-  trackComponentRender,
-  trackMemoryUsage,
-  getPerformanceSummary
-} = performanceService;

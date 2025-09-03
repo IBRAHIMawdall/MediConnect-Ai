@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { useErrorTracking } from '../hooks/useMonitoring.js';
+import { useErrorTracking } from '../hooks/useErrorTracking.jsx';
 import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react';
 
 class ErrorBoundaryClass extends React.Component {

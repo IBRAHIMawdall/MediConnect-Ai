@@ -20,6 +20,10 @@ out/
 .env.test.local
 .env.production.local
 .env.*.local
+# Added to prevent leaking production config
+.env.production
+.env.mongodb
+deployment/.env.production
 
 # SSL Certificates (for local development)
 certs/
@@ -156,3 +160,17 @@ workbox-*.js
 
 # PWA files
 manifest.json.backup
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pkl
+*.egg-info/
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
