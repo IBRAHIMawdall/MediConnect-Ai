@@ -1,0 +1,44 @@
+{
+  "name": "ICD10Code",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "ICD-10 code (e.g., E11.9)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Full description of the condition"
+    },
+    "category": {
+      "type": "string",
+      "description": "Main category (e.g., Endocrine, Cardiovascular)"
+    },
+    "specialty": {
+      "type": "string",
+      "description": "Medical specialty"
+    },
+    "chapter": {
+      "type": "string",
+      "description": "ICD-10 chapter"
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Search keywords"
+    },
+    "commonly_prescribed_drugs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Common medications for this condition"
+    }
+  },
+  "required": [
+    "code",
+    "title"
+  ]
+}

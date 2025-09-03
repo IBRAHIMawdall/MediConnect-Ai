@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Medical Information App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .offline-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .offline-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: #f8f9fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+        
+        .offline-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 16px;
+        }
+        
+        .offline-message {
+            font-size: 16px;
+            color: #718096;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+        
+        .offline-features {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+        
+        .offline-features h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            color: #4a5568;
+        }
+        
+        .feature-list li::before {
+            content: "✓";
+            color: #48bb78;
+            font-weight: bold;
+            margin-right: 12px;
+            font-size: 16px;
+        }
+        
+        .retry-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 12px;
+        }
+        
+        .retry-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .home-button {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 12px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .home-button:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .connection-status {
+            margin-top: 24px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .status-offline {
+            background: #fed7d7;
+            color: #c53030;
+        }
+        
+        .status-online {
+            background: #c6f6d5;
+            color: #2f855a;
+        }
+        
+        .cached-content {
+            margin-top: 24px;
+            text-align: left;
+        }
+        
+        .cached-content h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 12px;
+        }
+        
+        .cached-links {
+            list-style: none;
+        }
+        
+        .cached-links li {
+            margin-bottom: 8px;
+        }
+        
+        .cached-links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .cached-links a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 480px) {
+            .offline-container {
+                padding: 24px;
+            }
+            
+            .offline-title {
+                font-size: 24px;
+            }
+            
+            .retry-button,
+            .home-button {
+                display: block;
+                width: 100%;
+                margin: 8px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">
+            📡
+        </div>
+        
+        <h1 class="offline-title">You're Offline</h1>
+        
+        <p class="offline-message">
+            It looks like you've lost your internet connection. Don't worry - you can still access some features of the Medical Information App while offline.
+        </p>
+        
+        <div class="offline-features">
+            <h3>Available Offline Features</h3>
+            <ul class="feature-list">
+                <li>Browse previously viewed drug information</li>
+                <li>Access cached medical conditions</li>
+                <li>View saved search results</li>
+                <li>Read offline documentation</li>
+                <li>Use basic calculation tools</li>
+            </ul>
+        </div>
+        
+        <div>
+            <button class="retry-button" onclick="checkConnection()">Try Again</button>
+            <a href="/" class="home-button">Go Home</a>
+        </div>
+        
+        <div id="connectionStatus" class="connection-status status-offline">
+            🔴 No internet connection detected
+        </div>
+        
+        <div class="cached-content">
+            <h4>Quick Access to Cached Content:</h4>
+            <ul class="cached-links">
+                <li><a href="/" onclick="navigateIfCached(event, '/')">Home</a></li>
+                <li><a href="/drugs" onclick="navigateIfCached(event, '/drugs')">Drug Database</a></li>
+                <li><a href="/conditions" onclick="navigateIfCached(event, '/conditions')">Medical Conditions</a></li>
+                <li><a href="/search" onclick="navigateIfCached(event, '/search')">Search Tools</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Check connection status
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connectionStatus');
+            
+            if (navigator.onLine) {
+                statusElement.className = 'connection-status status-online';
+                statusElement.innerHTML = '🟢 Connection restored! You can now access all features.';
+                
+                // Show reload option
+                setTimeout(() => {
+                    if (confirm('Connection restored! Would you like to reload the page?')) {
+                        window.location.reload();
+                    }
+                }, 1000);
+            } else {
+                statusElement.className = 'connection-status status-offline';
+                statusElement.innerHTML = '🔴 No internet connection detected';
+            }
+        }
+        
+        // Check connection and try to reload
+        function checkConnection() {
+            updateConnectionStatus();
+            
+            if (navigator.onLine) {
+                // Try to fetch a small resource to verify connection
+                fetch('/favicon.ico', { 
+                    method: 'HEAD',
+                    cache: 'no-cache'
+                })
+                .then(() => {
+                    window.location.reload();
+                })
+                .catch(() => {
+                    alert('Connection test failed. Please check your internet connection and try again.');
+                });
+            } else {
+                alert('No internet connection detected. Please check your network settings.');
+            }
+        }
+        
+        // Navigate to cached content if available
+        function navigateIfCached(event, url) {
+            event.preventDefault();
+            
+            // Check if the page is cached
+            if ('caches' in window) {
+                caches.match(url)
+                    .then(response => {
+                        if (response) {
+                            window.location.href = url;
+                        } else {
+                            alert('This page is not available offline. Please connect to the internet to access it.');
+                        }
+                    })
+                    .catch(() => {
+                        alert('Unable to check cached content. Please try again.');
+                    });
+            } else {
+                alert('Offline browsing is not supported in this browser.');
+            }
+        }
+        
+        // Listen for connection changes
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+        
+        // Initial status check
+        updateConnectionStatus();
+        
+        // Periodic connection check
+        setInterval(() => {
+            if (navigator.onLine) {
+                fetch('/favicon.ico', { 
+                    method: 'HEAD',
+                    cache: 'no-cache',
+                    signal: AbortSignal.timeout(5000)
+                })
+                .then(() => {
+                    updateConnectionStatus();
+                })
+                .catch(() => {
+                    // Connection might be limited
+                    const statusElement = document.getElementById('connectionStatus');
+                    statusElement.className = 'connection-status status-offline';
+                    statusElement.innerHTML = '🟡 Limited connectivity detected';
+                });
+            }
+        }, 30000); // Check every 30 seconds
+        
+        // Service worker communication
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data.type === 'CACHE_UPDATE') {
+                    const notification = document.createElement('div');
+                    notification.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        background: #48bb78;
+                        color: white;
+                        padding: 12px 20px;
+                        border-radius: 8px;
+                        font-weight: 500;
+                        z-index: 1000;
+                        animation: slideIn 0.3s ease;
+                    `;
+                    notification.textContent = 'New content available offline!';
+                    document.body.appendChild(notification);
+                    
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 5000);
+                }
+            });
+        }
+        
+        // Add slide-in animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

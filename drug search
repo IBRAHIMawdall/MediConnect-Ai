@@ -1,0 +1,44 @@
+import React, { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Filter } from "lucide-react";
+
+export default function CodeSearchForm({ onSearch, onFilter, isLoading }) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [category, setCategory] = useState("all");
+  const [specialty, setSpecialty] = useState("all");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSearch(searchTerm);
+  };
+
+  const handleFilterChange = (type, value) => {
+    if (type === "category") setCategory(value);
+    if (type === "specialty") setSpecialty(value);
+    onFilter({ category: type === "category" ? value : category, specialty: type === "specialty" ? value : specialty });
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border p-4 space-y-4">
+      <form onSubmit={handleSubmit} className="flex gap-3">
+        <Input
+          placeholder="Search by code, condition, or keyword..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="flex-1"
+        />
+        <Button type="submit" disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
+          <Search className="w-4 h-4 mr-2" />
+          Search
+        </Button>
+      </form>
+
+      <div className="flex flex-wrap gap-3">
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-slate-500" />
+          <Select value={category} onValueChange={(value) => handleFilterChange("category", value)}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Category" />
+ 

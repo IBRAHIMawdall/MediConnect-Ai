@@ -1,0 +1,38 @@
+# Firebase Functions dependencies
+functions-framework>=3.4.0
+firebase-functions>=0.1.0
+firebase-admin>=6.2.0
+firestore>=0.0.8
+
+# HTTP and API dependencies
+requests>=2.31.0
+flask>=2.3.0
+flask-cors>=4.0.0
+validators>=0.22.0
+email-validator>=2.1.0
+python-dotenv>=1.0.0
+cachetools>=5.3.0
+ratelimit>=2.2.1
+fuzzywuzzy>=0.18.0
+python-levenshtein>=0.21.1
+jsonschema>=4.19.0
+
+# Data processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Security and validation
+cryptography>=41.0.0
+pyjwt>=2.8.0
+werkzeug>=2.3.0
+
+# Utilities
+python-dateutil>=2.8.0
+pytz>=2023.3
+dateutils>=0.6.12
+
+# Development and testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+black>=23.0.0
+flake8>=6.0.0

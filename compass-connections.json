@@ -1,0 +1,40 @@
+{
+  "type": "Compass Connections",
+  "version": {
+    "$numberInt": "1"
+  },
+  "connections": [
+    {
+      "id": "030e0b15-ac57-4bea-a8ed-3506112f527c",
+      "lastUsed": {
+        "$date": {
+          "$numberLong": "1756773328645"
+        }
+      },
+      "favorite": {
+        "name": "cluster0.dmj7afa.mongodb.net"
+      },
+      "savedConnectionType": "recent",
+      "connectionOptions": {
+        "connectionString": "mongodb+srv://ibrahim@cluster0.dmj7afa.mongodb.net/pharmgenius",
+        "oidc": {}
+      }
+    },
+    {
+      "id": "0e8b7f55-11ab-4d77-a88e-da82558c7705",
+      "lastUsed": {
+        "$date": {
+          "$numberLong": "1756773173364"
+        }
+      },
+      "favorite": {
+        "name": ""
+      },
+      "savedConnectionType": "recent",
+      "connectionOptions": {
+        "connectionString": "mongodb://localhost:27017/?directConnection=true",
+        "oidc": {}
+      }
+    }
+  ]
+}

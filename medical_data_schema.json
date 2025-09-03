@@ -1,0 +1,180 @@
+
+
+
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Medical Data Schema",
+  "description": "Schema for integrating various medical data sources including drugs, diagnoses, and medical codes.",
+  "type": "object",
+  "properties": {
+    "drugs": {
+      "type": "array",
+      "description": "List of drug information, primarily from FDA NDC Directory and Drug Product Labeling API.",
+      "items": {
+        "$ref": "#/definitions/Drug"
+      }
+    },
+    "diagnoses": {
+      "type": "array",
+      "description": "List of medical diagnoses with associated codes, from Clinical Table Search Service and other sources.",
+      "items": {
+        "$ref": "#/definitions/Diagnosis"
+      }
+    },
+    "medical_codes": {
+      "type": "array",
+      "description": "General medical codes, including ICD codes and other classification systems.",
+      "items": {
+        "$ref": "#/definitions/MedicalCode"
+      }
+    },
+    "specialties": {
+      "type": "array",
+      "description": "Medical specialties information.",
+      "items": {
+        "$ref": "#/definitions/Specialty"
+      }
+    }
+  },
+  "required": [
+    "drugs",
+    "diagnoses",
+    "medical_codes",
+    "specialties"
+  ],
+  "definitions": {
+    "Drug": {
+      "type": "object",
+      "properties": {
+        "ndc": {
+          "type": "string",
+          "description": "National Drug Code."
+        },
+        "product_name": {
+          "type": "string",
+          "description": "Official product name."
+        },
+        "generic_name": {
+          "type": "string",
+          "description": "Generic name of the drug."
+        },
+        "manufacturer": {
+          "type": "string",
+          "description": "Manufacturer of the drug."
+        },
+        "dosage_form": {
+          "type": "string",
+          "description": "Dosage form (e.g., tablet, capsule, injection)."
+        },
+        "route_of_administration": {
+          "type": "string",
+          "description": "Route of administration (e.g., oral, intravenous)."
+        },
+        "indications_and_usage": {
+          "type": "string",
+          "description": "Indications for use as per drug labeling."
+        },
+        "adverse_reactions": {
+          "type": "string",
+          "description": "Known adverse reactions."
+        },
+        "warnings": {
+          "type": "string",
+          "description": "Warnings and precautions."
+        },
+        "active_ingredients": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "strength": {
+                "type": "string"
+              }
+            },
+            "required": ["name", "strength"]
+          }
+        }
+      },
+      "required": ["ndc", "product_name", "manufacturer"]
+    },
+    "Diagnosis": {
+      "type": "object",
+      "properties": {
+        "condition_name": {
+          "type": "string",
+          "description": "Name of the medical condition."
+        },
+        "icd10_code": {
+          "type": "string",
+          "description": "ICD-10-CM code for the condition."
+        },
+        "icd9_code": {
+          "type": "string",
+          "description": "ICD-9-CM code for the condition."
+        },
+        "synonyms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of synonyms for the condition."
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the condition."
+        }
+      },
+      "required": ["condition_name", "icd10_code"]
+    },
+    "MedicalCode": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "The medical code itself."
+        },
+        "code_system": {
+          "type": "string",
+          "description": "The coding system (e.g., ICD-10-CM, NDC, SNOMED CT)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the code."
+        }
+      },
+      "required": ["code", "code_system", "description"]
+    },
+    "Specialty": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the medical specialty."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the medical specialty."
+        },
+        "related_diagnoses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of common diagnoses related to this specialty."
+        },
+        "related_procedures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of common procedures performed in this specialty."
+        }
+      },
+      "required": ["name"]
+    }
+  }
+}
+

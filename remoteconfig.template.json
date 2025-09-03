@@ -1,0 +1,259 @@
+{
+  "conditions": [
+    {
+      "name": "production_users",
+      "expression": "app.id == 'comprehensive-medical-info-prod'",
+      "tagColor": "RED"
+    },
+    {
+      "name": "beta_users",
+      "expression": "app.id == 'comprehensive-medical-info-beta'",
+      "tagColor": "ORANGE"
+    },
+    {
+      "name": "development_users",
+      "expression": "app.id == 'comprehensive-medical-info-dev'",
+      "tagColor": "GREEN"
+    },
+    {
+      "name": "admin_users",
+      "expression": "user.userProperty['role'] == 'admin'",
+      "tagColor": "PURPLE"
+    },
+    {
+      "name": "premium_users",
+      "expression": "user.userProperty['subscription'] == 'premium'",
+      "tagColor": "BLUE"
+    }
+  ],
+  "parameters": {
+    "api_rate_limit_per_minute": {
+      "defaultValue": {
+        "value": "60"
+      },
+      "conditionalValues": {
+        "premium_users": {
+          "value": "120"
+        },
+        "admin_users": {
+          "value": "300"
+        }
+      },
+      "description": "API rate limit per minute for different user types"
+    },
+    "enable_advanced_search": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "conditionalValues": {
+        "development_users": {
+          "value": "true"
+        },
+        "beta_users": {
+          "value": "true"
+        }
+      },
+      "description": "Enable advanced search features"
+    },
+    "enable_drug_interactions": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "conditionalValues": {
+        "production_users": {
+          "value": "true"
+        }
+      },
+      "description": "Enable drug interaction checking"
+    },
+    "enable_ai_recommendations": {
+      "defaultValue": {
+        "value": "false"
+      },
+      "conditionalValues": {
+        "premium_users": {
+          "value": "true"
+        },
+        "beta_users": {
+          "value": "true"
+        }
+      },
+      "description": "Enable AI-powered medical recommendations"
+    },
+    "max_search_results": {
+      "defaultValue": {
+        "value": "50"
+      },
+      "conditionalValues": {
+        "premium_users": {
+          "value": "100"
+        },
+        "admin_users": {
+          "value": "200"
+        }
+      },
+      "description": "Maximum number of search results to return"
+    },
+    "enable_offline_mode": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "Enable offline functionality with service worker"
+    },
+    "cache_duration_hours": {
+      "defaultValue": {
+        "value": "24"
+      },
+      "conditionalValues": {
+        "development_users": {
+          "value": "1"
+        }
+      },
+      "description": "Cache duration in hours for API responses"
+    },
+    "enable_analytics": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "conditionalValues": {
+        "development_users": {
+          "value": "false"
+        }
+      },
+      "description": "Enable Google Analytics tracking"
+    },
+    "enable_error_reporting": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "Enable error reporting to Firebase Crashlytics"
+    },
+    "maintenance_mode": {
+      "defaultValue": {
+        "value": "false"
+      },
+      "description": "Enable maintenance mode to show maintenance page"
+    },
+    "maintenance_message": {
+      "defaultValue": {
+        "value": "We are currently performing scheduled maintenance. Please check back in a few minutes."
+      },
+      "description": "Message to display during maintenance mode"
+    },
+    "feature_announcements": {
+      "defaultValue": {
+        "value": "{}"
+      },
+      "conditionalValues": {
+        "beta_users": {
+          "value": "{\"new_feature\": \"Try our new AI-powered drug interaction checker!\"}"
+        }
+      },
+      "description": "JSON object containing feature announcements"
+    },
+    "api_endpoints": {
+      "defaultValue": {
+        "value": "{\"openfda\": \"https://api.fda.gov\", \"backend\": \"https://api.medicalinfo.com\"}"
+      },
+      "conditionalValues": {
+        "development_users": {
+          "value": "{\"openfda\": \"https://api.fda.gov\", \"backend\": \"http://localhost:8000\"}"
+        },
+        "beta_users": {
+          "value": "{\"openfda\": \"https://api.fda.gov\", \"backend\": \"https://beta-api.medicalinfo.com\"}"
+        }
+      },
+      "description": "API endpoints configuration for different environments"
+    },
+    "security_headers": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "Enable security headers in responses"
+    },
+    "cors_origins": {
+      "defaultValue": {
+        "value": "https://medicalinfo.com,https://www.medicalinfo.com"
+      },
+      "conditionalValues": {
+        "development_users": {
+          "value": "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000"
+        },
+        "beta_users": {
+          "value": "https://beta.medicalinfo.com,https://medicalinfo.com"
+        }
+      },
+      "description": "Allowed CORS origins for API requests"
+    },
+    "jwt_expiration_hours": {
+      "defaultValue": {
+        "value": "24"
+      },
+      "conditionalValues": {
+        "admin_users": {
+          "value": "8"
+        },
+        "development_users": {
+          "value": "168"
+        }
+      },
+      "description": "JWT token expiration time in hours"
+    },
+    "enable_user_registration": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "Allow new user registration"
+    },
+    "max_file_upload_size_mb": {
+      "defaultValue": {
+        "value": "10"
+      },
+      "conditionalValues": {
+        "premium_users": {
+          "value": "50"
+        },
+        "admin_users": {
+          "value": "100"
+        }
+      },
+      "description": "Maximum file upload size in MB"
+    },
+    "enable_push_notifications": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "Enable push notifications for important updates"
+    },
+    "database_connection_pool_size": {
+      "defaultValue": {
+        "value": "10"
+      },
+      "conditionalValues": {
+        "production_users": {
+          "value": "20"
+        }
+      },
+      "description": "Database connection pool size"
+    },
+    "enable_request_logging": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "conditionalValues": {
+        "development_users": {
+          "value": "true"
+        }
+      },
+      "description": "Enable detailed request logging"
+    }
+  },
+  "version": {
+    "versionNumber": "1",
+    "updateTime": "2024-01-01T00:00:00Z",
+    "updateUser": {
+      "email": "admin@medicalinfo.com"
+    },
+    "description": "Initial Remote Config template for production deployment"
+  }
+}

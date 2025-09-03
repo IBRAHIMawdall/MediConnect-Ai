@@ -1,0 +1,158 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Default deny all access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+    
+    // User profile images - users can only access their own
+    match /users/{userId}/profile/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                      request.auth.uid == userId &&
+                      isValidImageFile(fileName) &&
+                      resource.size < 5 * 1024 * 1024; // 5MB limit
+      allow delete: if request.auth != null && 
+                       (request.auth.uid == userId ||
+                        request.auth.token.role in ['admin']);
+    }
+    
+    // User documents - private to user
+    match /users/{userId}/documents/{fileName} {
+      allow read, write: if request.auth != null && 
+                           request.auth.uid == userId &&
+                           isValidDocumentFile(fileName) &&
+                           resource.size < 10 * 1024 * 1024; // 10MB limit
+      allow delete: if request.auth != null && 
+                       (request.auth.uid == userId ||
+                        request.auth.token.role in ['admin']);
+    }
+    
+    // Public medical images - read for authenticated users, write for moderators
+    match /medical/images/{category}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                      request.auth.token.role in ['admin', 'moderator'] &&
+                      isValidImageFile(fileName) &&
+                      resource.size < 20 * 1024 * 1024; // 20MB limit
+      allow delete: if request.auth != null && 
+                       request.auth.token.role in ['admin'];
+    }
+    
+    // Drug images and documents
+    match /drugs/{drugId}/images/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                      request.auth.token.role in ['admin', 'moderator'] &&
+                      isValidImageFile(fileName) &&
+                      resource.size < 15 * 1024 * 1024; // 15MB limit
+      allow delete: if request.auth != null && 
+                       request.auth.token.role in ['admin'];
+    }
+    
+    match /drugs/{drugId}/documents/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                      request.auth.token.role in ['admin', 'moderator'] &&
+                      isValidDocumentFile(fileName) &&
+                      resource.size < 50 * 1024 * 1024; // 50MB limit
+      allow delete: if request.auth != null && 
+                       request.auth.token.role in ['admin'];
+    }
+    
+    // Diagnosis images and documents
+    match /diagnoses/{diagnosisId}/images/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                      request.auth.token.role in ['admin', 'moderator'] &&
+                      isValidImageFile(fileName) &&
+                      resource.size < 15 * 1024 * 1024; // 15MB limit
+      allow delete: if request.auth != null && 
+                       request.auth.token.role in ['admin'];
+    }
+    
+    match /diagnoses/{diagnosisId}/documents/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                      request.auth.token.role in ['admin', 'moderator'] &&
+                      isValidDocumentFile(fileName) &&
+                      resource.size < 50 * 1024 * 1024; // 50MB limit
+      allow delete: if request.auth != null && 
+                       request.auth.token.role in ['admin'];
+    }
+    
+    // System backups - admin only
+    match /system/backups/{fileName} {
+      allow read, write: if request.auth != null && 
+                           request.auth.token.role == 'admin';
+      allow delete: if request.auth != null && 
+                       request.auth.token.role == 'admin';
+    }
+    
+    // Temporary uploads - user specific with time limit
+    match /temp/{userId}/{fileName} {
+      allow read, write: if request.auth != null && 
+                           request.auth.uid == userId &&
+                           resource.timeCreated > timestamp.date(2024, 1, 1) &&
+                           resource.size < 100 * 1024 * 1024; // 100MB limit
+      allow delete: if request.auth != null && 
+                       (request.auth.uid == userId ||
+                        request.auth.token.role in ['admin']);
+    }
+    
+    // Public assets - read only for authenticated users
+    match /public/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                      request.auth.token.role == 'admin';
+    }
+    
+    // Cache files - system only
+    match /cache/{allPaths=**} {
+      allow read, write: if request.auth != null && 
+                           request.auth.token.role == 'system';
+    }
+  }
+}
+
+// Helper functions for file validation
+function isValidImageFile(fileName) {
+  return fileName.matches('.*\\.(jpg|jpeg|png|gif|webp|svg)$') &&
+         fileName.size() <= 255;
+}
+
+function isValidDocumentFile(fileName) {
+  return fileName.matches('.*\\.(pdf|doc|docx|txt|md|json|xml|csv)$') &&
+         fileName.size() <= 255;
+}
+
+function isValidUser(userId) {
+  return request.auth != null && request.auth.uid == userId;
+}
+
+function isAdmin() {
+  return request.auth != null && request.auth.token.role == 'admin';
+}
+
+function isModerator() {
+  return request.auth != null && 
+         request.auth.token.role in ['admin', 'moderator'];
+}
+
+function isSystem() {
+  return request.auth != null && request.auth.token.role == 'system';
+}
+
+function isRecentUpload() {
+  return resource.timeCreated > timestamp.date(2024, 1, 1);
+}
+
+function isValidFileSize(maxSizeBytes) {
+  return resource.size <= maxSizeBytes;
+}
+
+function hasValidContentType(allowedTypes) {
+  return resource.contentType in allowedTypes;
+}

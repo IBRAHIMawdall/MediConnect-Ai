@@ -1,0 +1,326 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  CACHE_VERSION: v1
+
+jobs:
+  # Code Quality and Security Checks
+  quality-check:
+    name: Code Quality & Security
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run ESLint
+      run: npm run lint
+      
+    - name: Run TypeScript check
+      run: npm run type-check
+      
+    - name: Security audit
+      run: npm run security:audit
+      
+    - name: Run security tests
+      run: npm run test:security
+      
+    - name: Upload security report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-report
+        path: security-report.json
+        retention-days: 30
+
+  # Unit and Integration Tests
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: quality-check
+    
+    strategy:
+      matrix:
+        node-version: [16, 18, 20]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run unit tests
+      run: npm test -- --coverage
+      
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      if: matrix.node-version == 18
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+
+  # Build and Asset Optimization
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: [quality-check, test]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run production cleanup
+      run: npm run cleanup:prod
+      
+    - name: Optimize assets
+      run: npm run optimize:assets
+      
+    - name: Build application
+      run: npm run build
+      env:
+        NODE_ENV: production
+        
+    - name: Generate service worker
+      run: npm run generate-sw
+      
+    - name: Compress assets
+      run: npm run compress
+      
+    - name: Generate cache statistics
+      run: npm run cache:stats
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-files
+        path: |
+          dist/
+          cache-report.json
+        retention-days: 7
+        
+    - name: Upload asset optimization report
+      uses: actions/upload-artifact@v4
+      with:
+        name: optimization-report
+        path: asset-optimization-report.json
+        retention-days: 30
+
+  # Performance and Accessibility Testing
+  lighthouse:
+    name: Lighthouse Performance Audit
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-files
+        path: dist/
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: Install Lighthouse CI
+      run: npm install -g @lhci/cli@0.12.x
+      
+    - name: Run Lighthouse CI
+      run: lhci autorun
+      env:
+        LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+  # Database Optimization Check
+  database-check:
+    name: Database Optimization
+    runs-on: ubuntu-latest
+    needs: quality-check
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run database analysis
+      run: npm run db:analyze
+      
+    - name: Upload database report
+      uses: actions/upload-artifact@v4
+      with:
+        name: database-report
+        path: database-optimization-report.json
+        retention-days: 30
+
+  # Staging Deployment
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build, lighthouse, database-check]
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: https://staging.medical-app.com
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-files
+        path: dist/
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: Install Firebase CLI
+      run: npm install -g firebase-tools
+      
+    - name: Deploy to Firebase Staging
+      run: firebase deploy --only hosting:staging --token ${{ secrets.FIREBASE_TOKEN }}
+      env:
+        FIREBASE_PROJECT: ${{ secrets.FIREBASE_PROJECT_STAGING }}
+        
+    - name: Run post-deployment tests
+      run: |
+        npm install -g newman
+        newman run tests/postman/staging-tests.json --env-var "baseUrl=https://staging.medical-app.com"
+
+  # Production Deployment
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, lighthouse, database-check]
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://medical-app.com
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-files
+        path: dist/
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: Install Firebase CLI
+      run: npm install -g firebase-tools
+      
+    - name: Deploy to Firebase Production
+      run: firebase deploy --only hosting:production --token ${{ secrets.FIREBASE_TOKEN }}
+      env:
+        FIREBASE_PROJECT: ${{ secrets.FIREBASE_PROJECT_PRODUCTION }}
+        
+    - name: Run post-deployment tests
+      run: |
+        npm install -g newman
+        newman run tests/postman/production-tests.json --env-var "baseUrl=https://medical-app.com"
+        
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ github.run_number }}
+        release_name: Release v${{ github.run_number }}
+        body: |
+          Automated release from CI/CD pipeline
+          
+          ## Changes
+          ${{ github.event.head_commit.message }}
+          
+          ## Artifacts
+          - Build artifacts available in workflow run
+          - Performance reports attached
+          - Security scan results included
+        draft: false
+        prerelease: false
+
+  # Cleanup
+  cleanup:
+    name: Cleanup Artifacts
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    
+    steps:
+    - name: Delete old artifacts
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            run_id: context.runId
+          });
+          
+          const oldArtifacts = artifacts.data.artifacts.filter(artifact => {
+            const ageInDays = (Date.now() - new Date(artifact.created_at)) / (1000 * 60 * 60 * 24);
+            return ageInDays > 7;
+          });
+          
+          for (const artifact of oldArtifacts) {
+            await github.rest.actions.deleteArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: artifact.id
+            });
+          }

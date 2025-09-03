@@ -1,0 +1,53 @@
+{
+  "name": "Drug",
+  "type": "object",
+  "properties": {
+    "generic_name": {
+      "type": "string",
+      "description": "Generic drug name"
+    },
+    "brand_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Brand/trade names"
+    },
+    "drug_class": {
+      "type": "string",
+      "description": "Therapeutic class"
+    },
+    "mechanism_of_action": {
+      "type": "string",
+      "description": "How the drug works"
+    },
+    "indications": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "What conditions this treats"
+    },
+    "icd10_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Associated ICD-10 codes"
+    },
+    "dosage_forms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Available forms (tablet, injection, etc.)"
+    },
+    "rxnorm_cui": {
+      "type": "string",
+      "description": "RxNorm concept unique identifier"
+    }
+  },
+  "required": [
+    "generic_name"
+  ]
+}

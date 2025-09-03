@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=sqlite:///app/medical.db
+      - OPENFDA_API_KEY=${OPENFDA_API_KEY}
+      - RATE_LIMIT_QPS=10
+      - SCHEDULE_OPENFDA_NDC_CRON=0 2 * * *
+      - SCHEDULE_OPENFDA_LABEL_CRON=0 3 * * *
+      - CORS_ORIGINS=https://your-firebase-app.web.app
+      - PORT=8080
+      - LOG_LEVEL=info
+      - ENABLE_SCHEDULER=true
+    volumes:
+      - medical_data:/app/medical.db
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1'
+        reservations:
+          memory: 256M
+          cpus: '0.5'
+
+volumes:
+  medical_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./data
+      o: bind
