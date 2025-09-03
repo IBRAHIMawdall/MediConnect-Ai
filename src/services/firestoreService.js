@@ -34,6 +34,10 @@ class FirestoreService {
   // Generic CRUD Operations
   async create(collectionName, data, docId = null) {
     try {
+      if (!db) {
+        throw new Error('Firestore not available - billing may not be enabled');
+      }
+      
       const timestamp = serverTimestamp();
       const docData = {
         ...data,
@@ -59,6 +63,10 @@ class FirestoreService {
 
   async read(collectionName, docId) {
     try {
+      if (!db) {
+        throw new Error('Firestore not available - billing may not be enabled');
+      }
+      
       const docRef = doc(db, collectionName, docId);
       const docSnap = await getDoc(docRef);
 
@@ -78,6 +86,10 @@ class FirestoreService {
 
   async update(collectionName, docId, data) {
     try {
+      if (!db) {
+        throw new Error('Firestore not available - billing may not be enabled');
+      }
+      
       const docRef = doc(db, collectionName, docId);
       const updateData = {
         ...data,
@@ -95,6 +107,10 @@ class FirestoreService {
 
   async delete(collectionName, docId) {
     try {
+      if (!db) {
+        throw new Error('Firestore not available - billing may not be enabled');
+      }
+      
       const docRef = doc(db, collectionName, docId);
       await deleteDoc(docRef);
       return { success: true };
@@ -107,6 +123,10 @@ class FirestoreService {
   // Query Operations
   async query(collectionName, constraints = [], options = {}) {
     try {
+      if (!db) {
+        throw new Error('Firestore not available - billing may not be enabled');
+      }
+      
       const { 
         limitCount = 20, 
         orderByField = 'createdAt', 

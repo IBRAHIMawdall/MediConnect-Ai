@@ -2,6 +2,11 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Health check document - public read access
+    match /_health/{document} {
+      allow read: if true;
+    }
+    
     // Default deny all access
     match /{document=**} {
       allow read, write: if false;
@@ -159,8 +164,8 @@ function isValidEmail(email) {
   return email.matches('.*@.*\\..*');
 }
 
-function isValidTimestamp(timestamp) {
-  return timestamp is timestamp;
+function isValidTimestamp(ts) {
+  return ts is timestamp;
 }
 
 function hasValidReviewData() {

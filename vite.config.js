@@ -77,7 +77,6 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
-          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
           ui: ['@headlessui/react', '@heroicons/react', 'lucide-react']
         }
       }
@@ -104,7 +103,14 @@ export default defineConfig({
       'lucide-react',
       'axios',
       'clsx',
-      'date-fns'
+      'date-fns',
+      'firebase/app',
+      'firebase/auth',
+      'firebase/firestore',
+      'firebase/functions',
+      'firebase/storage',
+      'firebase/analytics',
+      'firebase/performance'
     ]
   }
 })

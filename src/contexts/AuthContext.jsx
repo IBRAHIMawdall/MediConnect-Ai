@@ -37,41 +37,55 @@ export const AuthProvider = ({ children }) => {
           setUser(firebaseUser);
           setIsAuthenticated(true);
           
-          // Fetch user profile from Firestore
-          try {
-            const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-            if (userDoc.exists()) {
-              setUserProfile(userDoc.data());
-            } else {
-              // Create user profile if it doesn't exist
-              const defaultProfile = {
-                uid: firebaseUser.uid,
-                email: firebaseUser.email,
-                displayName: firebaseUser.displayName || '',
-                firstName: '',
-                lastName: '',
-                role: 'user',
-                subscription: 'free',
-                emailVerified: firebaseUser.emailVerified,
-                subscribeNewsletter: false,
-                preferences: {
-                  theme: 'light',
-                  language: 'en',
-                  notifications: {
-                    email: true,
-                    push: false
-                  }
-                },
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                lastLoginAt: new Date().toISOString()
-              };
-              
-              await setDoc(doc(db, 'users', firebaseUser.uid), defaultProfile);
-              setUserProfile(defaultProfile);
+          // Fetch user profile from Firestore (if available)
+          if (db) {
+            try {
+              const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+              if (userDoc.exists()) {
+                setUserProfile(userDoc.data());
+              } else {
+                // Create user profile if it doesn't exist
+                const defaultProfile = {
+                  uid: firebaseUser.uid,
+                  email: firebaseUser.email,
+                  displayName: firebaseUser.displayName || '',
+                  firstName: '',
+                  lastName: '',
+                  role: 'user',
+                  subscription: 'free',
+                  emailVerified: firebaseUser.emailVerified,
+                  subscribeNewsletter: false,
+                  preferences: {
+                    theme: 'light',
+                    language: 'en',
+                    notifications: {
+                      email: true,
+                      push: false
+                    }
+                  },
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                  lastLoginAt: new Date().toISOString()
+                };
+                
+                await setDoc(doc(db, 'users', firebaseUser.uid), defaultProfile);
+                setUserProfile(defaultProfile);
+              }
+            } catch (error) {
+              console.error('Error fetching user profile:', error);
             }
-          } catch (error) {
-            console.error('Error fetching user profile:', error);
+          } else {
+            console.warn('Firestore not available - using basic user profile');
+            // Create a basic profile without Firestore
+            const basicProfile = {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              displayName: firebaseUser.displayName || '',
+              role: 'user',
+              subscription: 'free',
+              emailVerified: firebaseUser.emailVerified
+            };
+            setUserProfile(basicProfile);
           }
         } else {
           // User is signed out
@@ -180,13 +194,17 @@ export const AuthProvider = ({ children }) => {
         await updateProfile(user, authUpdates);
       }
 
-      // Update Firestore profile
+      // Update Firestore profile (if available)
       const firestoreUpdates = {
         ...profileData,
         updatedAt: new Date().toISOString()
       };
       
-      await updateDoc(doc(db, 'users', user.uid), firestoreUpdates);
+      if (db) {
+        await updateDoc(doc(db, 'users', user.uid), firestoreUpdates);
+      } else {
+        console.warn('Firestore not available - profile update skipped');
+      }
       
       // Update local state
       setUserProfile(prev => ({ ...prev, ...firestoreUpdates }));
@@ -234,8 +252,12 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      // Delete user data from Firestore
-      await deleteDoc(doc(db, 'users', user.uid));
+      // Delete user data from Firestore (if available)
+      if (db) {
+        await deleteDoc(doc(db, 'users', user.uid));
+      } else {
+        console.warn('Firestore not available - user data deletion skipped');
+      }
       
       // Delete user account from Firebase Auth
       await deleteUser(user);
@@ -269,6 +291,11 @@ export const AuthProvider = ({ children }) => {
   const refreshUserProfile = async () => {
     if (!user) {
       return null;
+    }
+
+    if (!db) {
+      console.warn('Firestore not available - cannot refresh user profile');
+      return userProfile; // Return current profile if available
     }
 
     try {

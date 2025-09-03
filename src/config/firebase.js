@@ -24,9 +24,36 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase services
 export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const functions = getFunctions(app);
-export const storage = getStorage(app);
+
+// Initialize Firestore with error handling
+let db = null;
+try {
+  db = getFirestore(app);
+} catch (error) {
+  console.warn('Firestore not available - billing may not be enabled:', error);
+  db = null;
+}
+export { db };
+
+// Initialize Functions with error handling
+let functions = null;
+try {
+  functions = getFunctions(app);
+} catch (error) {
+  console.warn('Firebase Functions not available - billing may not be enabled:', error);
+  functions = null;
+}
+export { functions };
+
+// Initialize Storage with error handling
+let storage = null;
+try {
+  storage = getStorage(app);
+} catch (error) {
+  console.warn('Firebase Storage not available - billing may not be enabled:', error);
+  storage = null;
+}
+export { storage };
 
 // Initialize Analytics (only in production)
 let analytics = null;
@@ -128,8 +155,14 @@ export const handleFirebaseError = (error) => {
 // Firebase connection status
 export const checkFirebaseConnection = async () => {
   try {
-    // Simple connectivity test
-    const testDoc = await db.collection('_health').doc('test').get();
+    if (!db) {
+      return { connected: false, error: 'Firestore not initialized - billing may not be enabled' };
+    }
+    
+    // Simple connectivity test using v9+ syntax
+    const { doc, getDoc } = await import('firebase/firestore');
+    const testDocRef = doc(db, '_health', 'test');
+    const testDoc = await getDoc(testDocRef);
     return { connected: true, timestamp: new Date().toISOString() };
   } catch (error) {
     console.warn('Firebase connection test failed:', error);
