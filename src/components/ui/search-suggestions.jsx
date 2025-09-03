@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Search, Pill, FileText, Stethoscope } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Input } from "./input";
+import { Badge } from "./badge";
+import { Search, X } from "lucide-react";
+import { cn } from "../../utils/cn";
 
 // Mock data for suggestions - in a real app, this would come from your API
 const mockSuggestions = {

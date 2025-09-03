@@ -6,28 +6,28 @@
 // Environment variables for monitoring
 const env = {
   // Firebase Analytics
-  FIREBASE_ANALYTICS_ENABLED: process.env.VITE_FIREBASE_ANALYTICS_ENABLED === 'true',
-  FIREBASE_PERFORMANCE_ENABLED: process.env.VITE_FIREBASE_PERFORMANCE_ENABLED === 'true',
+  FIREBASE_ANALYTICS_ENABLED: import.meta.env.VITE_FIREBASE_ANALYTICS_ENABLED === 'true',
+  FIREBASE_PERFORMANCE_ENABLED: import.meta.env.VITE_FIREBASE_PERFORMANCE_ENABLED === 'true',
   
   // Debug and development
-  NODE_ENV: process.env.NODE_ENV || 'development',
-  DEBUG_ANALYTICS: process.env.VITE_DEBUG_ANALYTICS === 'true',
-  DEBUG_PERFORMANCE: process.env.VITE_DEBUG_PERFORMANCE === 'true',
+  NODE_ENV: import.meta.env.MODE || 'development',
+  DEBUG_ANALYTICS: import.meta.env.VITE_DEBUG_ANALYTICS === 'true',
+  DEBUG_PERFORMANCE: import.meta.env.VITE_DEBUG_PERFORMANCE === 'true',
   
   // Sampling rates
-  ANALYTICS_SAMPLE_RATE: parseFloat(process.env.VITE_ANALYTICS_SAMPLE_RATE) || 1.0,
-  PERFORMANCE_SAMPLE_RATE: parseFloat(process.env.VITE_PERFORMANCE_SAMPLE_RATE) || 0.1,
+  ANALYTICS_SAMPLE_RATE: parseFloat(import.meta.env.VITE_ANALYTICS_SAMPLE_RATE) || 1.0,
+  PERFORMANCE_SAMPLE_RATE: parseFloat(import.meta.env.VITE_PERFORMANCE_SAMPLE_RATE) || 0.1,
   
   // Feature flags
-  TRACK_USER_ENGAGEMENT: process.env.VITE_TRACK_USER_ENGAGEMENT !== 'false',
-  TRACK_SEARCH_ANALYTICS: process.env.VITE_TRACK_SEARCH_ANALYTICS !== 'false',
-  TRACK_ERROR_ANALYTICS: process.env.VITE_TRACK_ERROR_ANALYTICS !== 'false',
-  TRACK_PERFORMANCE_METRICS: process.env.VITE_TRACK_PERFORMANCE_METRICS !== 'false',
+  TRACK_USER_ENGAGEMENT: import.meta.env.VITE_TRACK_USER_ENGAGEMENT !== 'false',
+  TRACK_SEARCH_ANALYTICS: import.meta.env.VITE_TRACK_SEARCH_ANALYTICS !== 'false',
+  TRACK_ERROR_ANALYTICS: import.meta.env.VITE_TRACK_ERROR_ANALYTICS !== 'false',
+  TRACK_PERFORMANCE_METRICS: import.meta.env.VITE_TRACK_PERFORMANCE_METRICS !== 'false',
   
   // Thresholds
-  SLOW_RENDER_THRESHOLD: parseInt(process.env.VITE_SLOW_RENDER_THRESHOLD) || 100,
-  SLOW_API_THRESHOLD: parseInt(process.env.VITE_SLOW_API_THRESHOLD) || 1000,
-  MEMORY_WARNING_THRESHOLD: parseInt(process.env.VITE_MEMORY_WARNING_THRESHOLD) || 50 * 1024 * 1024, // 50MB
+  SLOW_RENDER_THRESHOLD: parseInt(import.meta.env.VITE_SLOW_RENDER_THRESHOLD) || 100,
+  SLOW_API_THRESHOLD: parseInt(import.meta.env.VITE_SLOW_API_THRESHOLD) || 1000,
+  MEMORY_WARNING_THRESHOLD: parseInt(import.meta.env.VITE_MEMORY_WARNING_THRESHOLD) || 50 * 1024 * 1024, // 50MB
 };
 
 // Analytics Configuration
@@ -223,7 +223,7 @@ export const MONITORING_CONFIG = {
   global: {
     enabled: env.NODE_ENV === 'production' || env.DEBUG_ANALYTICS || env.DEBUG_PERFORMANCE,
     environment: env.NODE_ENV,
-    version: process.env.VITE_APP_VERSION || '1.0.0'
+    version: import.meta.env.VITE_APP_VERSION || '1.0.0'
   }
 };
 

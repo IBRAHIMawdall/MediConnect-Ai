@@ -5,7 +5,7 @@ import {
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
-  signOut,
+  signOut as firebaseSignOut,
   sendPasswordResetEmail,
   sendEmailVerification,
   updateProfile,
@@ -164,7 +164,7 @@ class FirebaseAuthService {
   async signOut() {
     try {
       await this.logUserActivity('sign_out');
-      await signOut(auth);
+      await firebaseSignOut(auth);
       return { success: true };
     } catch (error) {
       console.error('Sign-out error:', error);

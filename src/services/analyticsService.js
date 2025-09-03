@@ -4,7 +4,7 @@
  */
 
 import { analytics, performance } from '../config/firebase.js';
-import { logEvent, setUserProperties, setUserId } from 'firebase/analytics';
+import { logEvent, setUserProperties as firebaseSetUserProperties, setUserId } from 'firebase/analytics';
 import { trace } from 'firebase/performance';
 import { ANALYTICS_CONFIG, ERROR_CONFIG, USER_CONFIG, DEBUG_CONFIG } from '../config/monitoring.js';
 
@@ -40,7 +40,7 @@ class AnalyticsService {
     
     try {
       this.userProperties = { ...this.userProperties, ...properties };
-      setUserProperties(analytics, properties);
+      firebaseSetUserProperties(analytics, properties);
     } catch (error) {
       console.warn('Failed to set user properties:', error);
     }

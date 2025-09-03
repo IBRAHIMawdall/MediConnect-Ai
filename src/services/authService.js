@@ -2,9 +2,10 @@ import { auth, db } from '../config/firebase';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
+  signOut as firebaseSignOut,
+  onAuthStateChanged as firebaseOnAuthStateChanged,
   sendPasswordResetEmail,
+  sendEmailVerification,
   updateProfile,
   updatePassword,
   EmailAuthProvider,
@@ -45,7 +46,7 @@ class AuthService {
   }
 
   setupAuthStateListener() {
-    onAuthStateChanged(auth, async (user) => {
+    firebaseOnAuthStateChanged(auth, async (user) => {
       this.currentUser = user;
       if (user) {
         await this.loadUserProfile(user.uid);
@@ -157,9 +158,11 @@ class AuthService {
 
   async signOut() {
     try {
-      await signOut(auth);
+      await this.logUserActivity('sign_out');
+      await firebaseSignOut(auth);
       this.currentUser = null;
       this.userProfile = null;
+      return { success: true };
     } catch (error) {
       console.error('Sign out error:', error);
       throw this.handleAuthError(error);
@@ -398,7 +401,6 @@ export default authService;
 export const {
   signUp,
   signIn,
-  signOut,
   resetPassword,
   updateUserProfile,
   changePassword,

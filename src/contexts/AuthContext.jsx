@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { 
-  onAuthStateChanged,
+  onAuthStateChanged as firebaseOnAuthStateChanged,
   signOut as firebaseSignOut,
   sendEmailVerification,
   updateProfile,
@@ -12,7 +12,6 @@ import {
 import { doc, setDoc, getDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 import { authMethods, onAuthStateChange, getCurrentUser, isAuthenticated as checkAuthenticated, getUserRole, hasRole as checkUserRole } from '../config/auth';
-import { authService } from '../services/authService';
 
 const AuthContext = createContext({});
 
@@ -31,7 +30,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribe = firebaseOnAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
           // User is signed in

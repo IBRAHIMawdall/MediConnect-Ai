@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import { useAuth } from "@/contexts/AuthContext";
+import { createPageUrl } from "./utils";
+import { useAuth } from "./contexts/AuthContext";
 import {
   Database, 
   Search, 
@@ -30,7 +30,7 @@ import {
   SidebarHeader,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
+} from "./components/ui/sidebar";
 
 const getNavigationItems = (user) => {
   const baseItems = [
@@ -92,6 +92,21 @@ export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const { user, logout, switchRole } = useAuth();
   const navigationItems = getNavigationItems(user);
+
+  // Show loading state if user is not loaded yet
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <div className="text-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl mx-auto mb-4">
+            <Activity className="w-7 h-7 text-white" />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-700 mb-2">Loading...</h2>
+          <p className="text-slate-500">Please wait while we load your session</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>

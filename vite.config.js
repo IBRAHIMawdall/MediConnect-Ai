@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 // Check if SSL certificates exist for HTTPS development
 const httpsConfig = () => {
@@ -20,6 +21,13 @@ const httpsConfig = () => {
 
 export default defineConfig({
   plugins: [react()],
+  
+  // Path aliases
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src')
+    }
+  },
   
   // Development server configuration
   server: {

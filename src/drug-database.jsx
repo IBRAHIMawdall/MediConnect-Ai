@@ -1,16 +1,16 @@
 
 import React, { useState, useEffect } from "react";
-import { Drug } from "@/entities/all";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Drug } from "./entities/all";
+import { Button } from "./components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
+import { Badge } from "./components/ui/badge";
+import { Input } from "./components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
 import { Plus, Pill, Edit, Search, Filter } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import SearchSuggestions from "@/components/ui/search-suggestions";
+import { Skeleton } from "./components/ui/skeleton";
+import SearchSuggestions from "./components/ui/search-suggestions";
 
-import AddDrugForm from "./src/components/medical/AddDrugForm";
+import AddDrugForm from "./components/medical/AddDrugForm";
 
 export default function DrugDatabase() {
   const [drugs, setDrugs] = useState([]);

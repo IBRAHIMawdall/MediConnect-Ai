@@ -1,14 +1,14 @@
 
 import React, { useState, useEffect } from "react";
-import { ICD10Code } from "@/entities/all";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { ICD10Code } from "./entities/all";
+import { Button } from "./components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
+import { Badge } from "./components/ui/badge";
 import { Plus, FileText, Edit, Stethoscope } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "./components/ui/skeleton";
 
-import CodeSearchForm from "@/components/medical/CodeSearchForm";
-import AddCodeForm from "@/components/medical/AddCodeForm";
+import CodeSearchForm from "./components/medical/CodeSearchForm";
+import AddCodeForm from "./components/medical/AddCodeForm";
 
 export default function ICD10Browser() {
   const [codes, setCodes] = useState([]);

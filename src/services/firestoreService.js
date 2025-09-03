@@ -23,7 +23,7 @@ import {
   runTransaction
 } from 'firebase/firestore';
 import { db, handleFirebaseError } from '../config/firebase.js';
-import authService from './firebaseAuthService.js';
+import authService from './authService.js';
 
 class FirestoreService {
   constructor() {

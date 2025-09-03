@@ -13,9 +13,8 @@ import {
   FacebookAuthProvider,
   TwitterAuthProvider,
   GithubAuthProvider,
-  signOut,
+  signOut as firebaseSignOut,
   sendPasswordResetEmail,
-  sendEmailVerification,
   updateProfile,
   updatePassword,
   deleteUser,
@@ -167,7 +166,7 @@ export const authMethods = {
   // User Management
   async signOutUser() {
     try {
-      await signOut(auth);
+      await firebaseSignOut(auth);
       return { success: true };
     } catch (error) {
       console.error('Signout error:', error);

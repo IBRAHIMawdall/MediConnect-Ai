@@ -1,13 +1,13 @@
 import React, { useState, useCallback } from "react";
-import { UploadFile, ExtractDataFromUploadedFile } from "@/integrations/Core";
-import { ICD10Code, Drug } from "@/entities/all";
+import { UploadFile, ExtractDataFromUploadedFile } from "./integrations/Core";
+import { ICD10Code, Drug } from "./entities/all";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
+import { Button } from "./components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
+import { Progress } from "./components/ui/progress";
+import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
 import { 
   UploadCloud, 
   File, 
@@ -21,8 +21,8 @@ import {
   Pill
 } from "lucide-react";
 
-import DataReviewTable from "./src/components/data/DataReviewTable";
-import ExportActions from "./src/components/data/ExportActions";
+import DataReviewTable from "./components/data/DataReviewTable";
+import ExportActions from "./components/data/ExportActions";
 
 const fileTypes = {
   'text/csv': 'CSV',
